@@ -43,16 +43,17 @@ def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]
                 else:
                     if grid[y][x_right-1] & MazeGenerator.EAST:
                         current_row.append(wall)
-                    else:
+                    else: 
                         current_row.append(space)
             else:
-                current_row.append(space)
+                x = (column-1) // 2
+                y = (row - 1) // 2
+                if x == entry[0] and y == entry[1]:
+                    current_row.append(f"\033[32m{wall}\033[0m")
+                elif x == exit_[0] and y == exit_[1]:
+                    current_row.append(f"\033[31m{wall}\033[0m")
+                else:
+                    current_row.append(space)
         lines.append("".join(current_row))
     return "\n".join(lines)
         
-
-
-result = render([[15,15],[15,15]], (0,0), (1,1))
-print(len(result.split("\n")))
-
-print(result)
