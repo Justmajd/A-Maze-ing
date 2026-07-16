@@ -7,9 +7,8 @@ def is_odd(num) -> bool:
     return num % 2 != 0
 
 def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]) -> str:
-    CELL_WIDTH = 3  # Adjust this width to make the cells look square in your terminal
-    wall = "█" * CELL_WIDTH
-    space = " " * CELL_WIDTH
+    wall = "█" * 2
+    space = " " * 2
 
     height = len(grid)
     width = len(grid[0]) if grid else 0
