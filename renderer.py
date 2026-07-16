@@ -1,12 +1,19 @@
 from mazegen.generator import MazeGenerator
 
-def is_even(num) -> bool:
+
+def is_even(num: int) -> bool:
     return num % 2 == 0
 
-def is_odd(num) -> bool:
+
+def is_odd(num: int) -> bool:
     return num % 2 != 0
 
-def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]) -> str:
+
+def render(
+    grid: list[list[int]],
+    entry: tuple[int, int],
+    exit_: tuple[int, int]
+) -> str:
     wall = "█" * 2
     space = " " * 2
 
@@ -25,12 +32,12 @@ def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]
                     if grid[y_below][x] & MazeGenerator.NORTH:
                         current_row.append(wall)
                     else:
-                        current_row.append(space)               
+                        current_row.append(space)
                 else:
                     if grid[y_below-1][x] & MazeGenerator.SOUTH:
                         current_row.append(wall)
                     else:
-                        current_row.append(space)                   
+                        current_row.append(space)
 
             elif is_odd(row) and is_even(column):
                 x_right = column // 2
@@ -43,7 +50,7 @@ def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]
                 else:
                     if grid[y][x_right-1] & MazeGenerator.EAST:
                         current_row.append(wall)
-                    else: 
+                    else:
                         current_row.append(space)
             else:
                 x = (column-1) // 2
@@ -56,4 +63,3 @@ def render(grid: list[list[int]], entry: tuple[int, int], exit_: tuple[int, int]
                     current_row.append(space)
         lines.append("".join(current_row))
     return "\n".join(lines)
-        

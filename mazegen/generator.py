@@ -1,5 +1,6 @@
 from typing import Optional
 
+
 class MazeGenerator:
     NORTH = 1
     EAST = 2
@@ -24,6 +25,4 @@ class MazeGenerator:
         nx = x + dx
         ny = y + dy
         self.grid[y][x] = self.grid[y][x] & (15 - direction)
-        self.grid[ny][nx] = self.grid[ny][nx] & (15 - self.OPPOSITE[direction])
-
-        
+        self.grid[ny][nx] = self.grid[ny][nx] & (15 - self.OPPOSITE[direction])
