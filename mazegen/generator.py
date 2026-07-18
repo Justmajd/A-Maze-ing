@@ -1,4 +1,5 @@
 from typing import Optional
+from collections import deque
 import random
 
 class MazeGenerator:
@@ -52,3 +53,58 @@ class MazeGenerator:
                 visited.add((x,y))
             else:
                 stack.pop()
+
+    def solve(self) -> list[str]:
+        queue = deque([self.entry])
+        visited_rooms = {self.entry}
+        path = {}
+
+        directions = [
+            (self.NORTH, 'N'),
+            (self.EAST, 'E'),
+            (self.SOUTH, 'S'),
+            (self.WEST, 'W')
+        ]
+        while queue:
+            current = queue.popleft()
+            if current == self.exit:
+                final_path = []
+                trace_cell = self.exit
+
+                while trace_cell != self.entry:
+                    previous_cell, letter = path[trace_cell]
+                    final_path.append(letter)
+                    trace_cell = previous_cell
+
+                final_path.reverse()
+                return final_path
+
+            x, y = current
+            for direction, letter in directions:
+                dx, dy = self.OFFSET[direction]
+                nx, ny = x + dx, y + dy
+
+                if (self.grid[y][x] & direction) == 0 and (nx, ny) not in visited_rooms:
+                    visited_rooms.add((nx, ny))
+                    path[(nx, ny)] = (current, letter)
+                    queue.append((nx, ny))
+
+    def verify_connectivity(self) -> bool:
+        queue = deque([self.entry])
+        visited_rooms = {self.entry}
+
+        target_count = (self.width * self.height)
+
+        directions = [self.NORTH, self.EAST, self.SOUTH, self.WEST]
+        while queue:
+            current = queue.popleft()
+            x, y = current
+
+            for direction in directions:
+                dx, dy = self.OFFSET[direction]
+                nx, ny = x + dx, y + dy
+
+                if (self.grid[y][x] & direction) == 0 and (nx, ny) not in visited_rooms:
+                    visited_rooms.add((nx, ny))
+                    queue.append((nx, ny))
+        return len(visited_rooms) == target_count
