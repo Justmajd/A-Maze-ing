@@ -29,6 +29,7 @@ def run_test(
     print(render(maze.grid, maze.entry, maze.exit, maze.pattern_cells))
     print(maze.verify_connectivity())
     print(maze.solve())
+    maze.output("maze.txt", maze.solve())
 
 run_test(20, 15, (0, 0), (19,13 ),None)
 
