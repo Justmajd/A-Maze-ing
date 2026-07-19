@@ -1,3 +1,5 @@
+from typing import Optional
+
 from mazegen.generator import MazeGenerator
 from renderer import render
 
@@ -7,7 +9,7 @@ def run_test(
     height: int,
     entry: tuple[int, int],
     exit_: tuple[int, int],
-    seed: int,
+    seed: Optional[int],
 ) -> None:
     maze = MazeGenerator(
         width=width,
@@ -24,13 +26,10 @@ def run_test(
     print(f"Entry: {entry}")
     print(f"Exit: {exit_}")
     print(f"Seed: {seed}")
-    print(render(maze.grid, maze.entry, maze.exit))
+    print(render(maze.grid, maze.entry, maze.exit, maze.pattern_cells))
+    print(maze.verify_connectivity())
+    print(maze.solve())
 
-
-run_test(20, 15, (0, 0), (19,13 ),0)
-run_test(20, 15, (0, 0), (19,13 ),0)
-run_test(20, 15, (0, 0), (19,13 ),42)
-run_test(20, 15, (0, 0), (19,13 ),None)
 run_test(20, 15, (0, 0), (19,13 ),None)
 
 
