@@ -157,3 +157,15 @@ class MazeGenerator:
                 if character == "#":
                     pattern_cells.add((start_x + local_x, start_y + local_y))
         return pattern_cells
+
+    def output(self, filename: str, path: list[str]) -> None:
+        with open(filename, 'w') as file:
+            for row in self.grid:
+                hex_chars = [f"{cell:X}" for cell in row]
+                row_string = "".join(hex_chars)
+
+                file.write(row_string + "\n")
+
+            file.write(f"\n{self.entry[0]},{self.entry[1]}")
+            file.write(f"\n{self.exit[0]},{self.exit[1]}")
+            file.write(f"\n{''.join(path)}\n")
