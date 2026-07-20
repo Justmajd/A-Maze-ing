@@ -244,14 +244,6 @@ class MazeGenerator:
             self.braid(rng=rng)
             self.reduce_dead_ends(rng=rng)
 
-    def get_corner_cells(self) -> list[tuple[int, int]]:
-        return [
-            (0, 0),
-            (self.width - 1, 0),
-            (0, self.height - 1),
-            (self.width - 1, self.height - 1),
-        ]
-
     def solve(self) -> list[str]:
         queue: deque[tuple[int, int]] = deque([self.entry])
         visited_rooms: set[tuple[int, int]] = {self.entry}

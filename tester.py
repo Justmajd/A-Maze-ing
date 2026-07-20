@@ -1,81 +1,37 @@
-from a_maze_ing import validate_config
+from sys import argv
 
-
-def expect_error(
-    name: str,
-    config: dict[str, str],
-) -> None:
-    try:
-        validate_config(config)
-    except ValueError as error:
-        print(f"{name}: PASS")
-        print(f"  {error}")
-        return
-
-    print(f"{name}: FAIL")
+from a_maze_ing import parse_config, validate_config
+from mazegen.generator import MazeGenerator
+from renderer import render
 
 
 def main() -> None:
-    base = {
-        "WIDTH": "20",
-        "HEIGHT": "15",
-        "ENTRY": "0,0",
-        "EXIT": "19,14",
-        "OUTPUT_FILE": "maze.txt",
-        "PERFECT": "False",
-        "SEED": "42",
-    }
+    parsed = parse_config(argv[1])
+    valid = validate_config(parsed)
 
-    tests = [
-        (
-            "Zero width",
-            {**base, "WIDTH": "0"},
-        ),
-        (
-            "Negative height",
-            {**base, "HEIGHT": "-1"},
-        ),
-        (
-            "Entry outside left",
-            {**base, "ENTRY": "-1,0"},
-        ),
-        (
-            "Entry outside right",
-            {**base, "ENTRY": "20,0"},
-        ),
-        (
-            "Exit outside bottom",
-            {**base, "EXIT": "19,15"},
-        ),
-        (
-            "Same entry and exit",
-            {**base, "EXIT": "0,0"},
-        ),
-        (
-            "Invalid perfect",
-            {**base, "PERFECT": "maybe"},
-        ),
-        (
-            "Invalid seed",
-            {**base, "SEED": "hello"},
-        ),
-        (
-            "Missing width",
-            {
-                key: value
-                for key, value in base.items()
-                if key != "WIDTH"
-            },
-        ),
-    ]
+    maze = MazeGenerator(
+        width=valid.width,
+        height=valid.height,
+        entry=valid.entry,
+        exit_=valid.exit,
+        perfect=valid.perfect,
+        seed=valid.seed,
+    )
 
-    for name, config in tests:
-        expect_error(name, config)
+    maze.generate()
+    solution = maze.solve()
 
-    valid = validate_config(base)
+    print(
+        render(
+            maze.grid,
+            maze.entry,
+            maze.exit,
+            maze.pattern_cells,
+            solution,
+        )
+    )
 
-    print("\nValid configuration: PASS")
-    print(valid)
+    print("Shortest path:", "".join(solution))
 
 
 if __name__ == "__main__":
