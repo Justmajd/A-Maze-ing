@@ -1,5 +1,6 @@
-from typing import Optional
 from collections import deque
+from typing import Optional
+
 import random
 
 
@@ -30,7 +31,185 @@ class MazeGenerator:
         self.grid[y][x] = self.grid[y][x] & (15 - direction)
         self.grid[ny][nx] = self.grid[ny][nx] & (15 - self.OPPOSITE[direction])
 
+    def has_open_3x3(self) -> bool:
+        for y in range(self.height - 2):
+            for x in range(self.width - 2):
+                block_open = True
+
+                for local_y in range(3):
+                    for local_x in range(2):
+                        cellx = x + local_x
+                        celly = y + local_y
+
+                        if (self.grid[celly][cellx] & self.EAST) != 0:
+                            block_open = False
+                            break
+                    if not block_open:
+                        break
+                if block_open:
+                    for local_y in range(2):
+                        for local_x in range(3):
+                            cellx = x + local_x
+                            celly = y + local_y
+                            if (self.grid[celly][cellx] & self.SOUTH) != 0:
+                                block_open = False
+                                break
+                        if not block_open:
+                            break
+                if block_open:
+                    return True
+
+        return False
+
+    def restore_wall(self, x: int, y: int, direction: int) -> None:
+        dx, dy = self.OFFSET[direction]
+        nx = x + dx
+        ny = y + dy
+        self.grid[y][x] |= direction
+        self.grid[ny][nx] |= self.OPPOSITE[direction]
+
+    def count_open_passages(self, x: int, y: int) -> int:
+        open_count = 0
+        directions: list[int] = [
+            self.EAST,
+            self.SOUTH,
+            self.NORTH,
+            self.WEST,
+        ]
+        for direction in directions:
+            dx, dy = self.OFFSET[direction]
+            nx = x + dx
+            ny = y + dy
+            if (
+                0 <= nx < self.width
+                and 0 <= ny < self.height
+                and (nx, ny) not in self.pattern_cells
+                and (self.grid[y][x] & direction) == 0
+                and (self.grid[ny][nx]
+                     & self.OPPOSITE[direction]) == 0
+            ):
+                open_count += 1
+        return open_count
+
+    def count_dead_ends(self) -> int:
+        dead_count = 0
+
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in self.pattern_cells:
+                    continue
+                if self.count_open_passages(x, y) == 1:
+                    dead_count += 1
+        return dead_count
+
+    def get_dead_end_cells(self) -> list[tuple[int, int]]:
+        dead_ends: list[tuple[int, int]] = []
+
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in self.pattern_cells:
+                    continue
+                if self.count_open_passages(x, y) == 1:
+                    dead_ends.append((x, y))
+        return dead_ends
+
+    def get_closed_neighbor_walls(
+        self,
+        x: int,
+        y: int,
+    ) -> list[int]:
+        closed_directions: list[int] = []
+
+        for direction in self.OFFSET:
+            dx, dy = self.OFFSET[direction]
+            nx = x + dx
+            ny = y + dy
+
+            if (
+                0 <= nx < self.width
+                and 0 <= ny < self.height
+                and (nx, ny) not in self.pattern_cells
+                and (self.grid[y][x] & direction) != 0
+                and (
+                    self.grid[ny][nx]
+                    & self.OPPOSITE[direction]
+                ) != 0
+            ):
+                closed_directions.append(direction)
+
+        return closed_directions
+
+    def open_dead_end(
+        self,
+        x: int,
+        y: int,
+        rng: random.Random,
+    ) -> bool:
+        if self.count_open_passages(x, y) != 1:
+            return False
+        closed_directions = self.get_closed_neighbor_walls(x, y)
+        rng.shuffle(closed_directions)
+
+        for direction in closed_directions:
+            self.carve(x, y, direction)
+            if self.has_open_3x3():
+                self.restore_wall(x, y, direction)
+                continue
+            return True
+        return False
+
+    def reduce_dead_ends(self, rng: random.Random) -> int:
+        dead_ends = self.get_dead_end_cells()
+        rng.shuffle(dead_ends)
+
+        fixed_count = 0
+
+        for x, y in dead_ends:
+            if self.open_dead_end(x, y, rng):
+                fixed_count += 1
+        return fixed_count
+
+    def braid(self, rng: random.Random) -> int:
+        candidates: list[tuple[int, int, int]] = []
+        directions: list[int] = [
+            self.EAST,
+            self.SOUTH,
+        ]
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in self.pattern_cells:
+                    continue
+                for direction in directions:
+                    dx, dy = self.OFFSET[direction]
+                    nx = x + dx
+                    ny = y + dy
+                    if (
+                        0 <= nx < self.width
+                        and 0 <= ny < self.height
+                        and (nx, ny) not in self.pattern_cells
+                        and (self.grid[y][x] & direction) != 0
+                        and (self.grid[ny][nx] & self.OPPOSITE[direction]) != 0
+                    ):
+                        candidates.append((x, y, direction))
+        rng.shuffle(candidates)
+        target_removal = max(2, len(candidates) // 10)
+        removed = 0
+        for x, y, direction in candidates:
+            if removed >= target_removal:
+                break
+            self.carve(x, y, direction)
+            if self.has_open_3x3():
+                self.restore_wall(x, y, direction)
+            else:
+                removed += 1
+        return removed
+
     def generate(self) -> None:
+        self.grid = [
+            [15] * self.width
+            for _ in range(self.height)
+        ]
+
         stack: list[tuple[int, int]] = [self.entry]
         visited: set[tuple[int, int]] = {self.entry}
         rng = random.Random(self.seed)
@@ -61,6 +240,17 @@ class MazeGenerator:
                 visited.add((x, y))
             else:
                 stack.pop()
+        if not self.perfect:
+            self.braid(rng=rng)
+            self.reduce_dead_ends(rng=rng)
+
+    def get_corner_cells(self) -> list[tuple[int, int]]:
+        return [
+            (0, 0),
+            (self.width - 1, 0),
+            (0, self.height - 1),
+            (self.width - 1, self.height - 1),
+        ]
 
     def solve(self) -> list[str]:
         queue: deque[tuple[int, int]] = deque([self.entry])
@@ -159,7 +349,7 @@ class MazeGenerator:
         return pattern_cells
 
     def output(self, filename: str, path: list[str]) -> None:
-        with open(filename, 'w') as file:
+        with open(filename, "w") as file:
             for row in self.grid:
                 hex_chars = [f"{cell:X}" for cell in row]
                 row_string = "".join(hex_chars)
