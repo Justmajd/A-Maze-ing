@@ -147,5 +147,45 @@ def main() -> None:
             print(e)
             exit(1)
 
+        try:
+            maze = MazeGenerator(
+                width=config.width,
+                height=config.height,
+                entry=config.entry,
+                exit_=config.exit,
+                perfect=config.perfect,
+                seed=config.seed,
+            )
+            maze.generate()
+        except Exception as e:
+            print(f"Failed to generate maze: {e}")
+            exit(1)
+
+        try:
+            solution = maze.solve()
+        except Exception as e:
+            print(f"Failed to solve maze: {e}")
+            exit(1)
+
+        try:
+            maze.output(config.output_file, solution)
+        except Exception as e:
+            print(f"Failed to write output file: {e}")
+            exit(1)
+
+        try:
+            rendered_maze = render(
+                maze.grid,
+                maze.entry,
+                maze.exit,
+                maze.pattern_cells,
+                solution,
+            )
+            print(rendered_maze)
+        except Exception as e:
+            print(f"Failed to render maze: {e}")
+            exit(1)
+
+
 if __name__ == "__main__":
     main()
