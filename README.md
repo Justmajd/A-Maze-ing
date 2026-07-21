@@ -281,12 +281,7 @@ Classic references used while designing and implementing the project:
 
 ### AI usage
 
-AI assistance was used to compare subject versions, identify edge cases,
-review error handling, design additional tests, and draft documentation and
-docstrings. It was not treated as an authority: generated suggestions were
-checked against the subject, exercised with automated tests, Flake8, mypy, and
-manual CLI runs, and remain the team's responsibility to understand and
-defend during peer review.
+AI assistance was used to review error handling, design additional tests, and draft documentation and docstrings. It was not treated as an authority: generated suggestions were checked against the subject, exercised with automated tests, Flake8, mypy, andmanual CLI runs, and remain the team's responsibility to understand and writing code and reasoning.
 
 ## Team and project management
 
@@ -294,9 +289,9 @@ defend during peer review.
 
 - **Majd (`malhodal`)**: configuration parsing and validation, recursive
   backtracking, `42` reservation, non-perfect braiding, rendering and colors,
-  menu integration, packaging, and final integration.
+  menu integration.
 - **Omar (`omjarada`)**: BFS shortest-path solving, connectivity verification,
-  hexadecimal output, Makefile integration, and shared review/testing.
+  hexadecimal output, Makefile integration, and shared review/testing, packaging, and final integration.
 
 ### Planning and evolution
 
@@ -318,13 +313,6 @@ license requirement.
 - Symmetric carving made wall coherence an invariant rather than a later fix.
 - Seeded generation made failures reproducible.
 - Flake8, strict mypy, and pytest provided fast integration feedback.
-
-### What could be improved
-
-- Automated tests and documentation should have started earlier.
-- Requirements should be rechecked whenever the subject version changes.
-- Package artifacts should be rebuilt after every source-level release change.
-- Smaller commits and earlier shared integration would reduce final cleanup.
 
 ### Tools
 
