@@ -2,7 +2,7 @@ from sys import argv, exit
 from dataclasses import dataclass
 from typing import Optional
 
-from mazegen.generator import MazeGenerator
+from mazegen import MazeGenerator
 from renderer import render
 
 

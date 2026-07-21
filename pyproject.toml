@@ -1,0 +1,24 @@
+[project]
+name = "mazegen"
+version = "1.0.0"
+description = "A-maze-ing is a reusable maze generator with recursive backtracking, optional braiding, and BFS solving."
+authors = [
+    {name = "Majd Jamal",email = "majd.alhodali@learner.42.tech"},
+    {name = "Omar Jaradat",email ="omar.jaradat@learner.42.tech"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "flake8 (>=7.3.0,<8.0.0)",
+    "mypy (>=2.3.0,<3.0.0)",
+    "pytest (>=9.1.1,<10.0.0)"
+]
