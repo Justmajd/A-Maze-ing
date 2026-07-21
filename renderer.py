@@ -1,11 +1,15 @@
+"""ANSI terminal rendering for generated mazes and solution paths."""
+
 from mazegen import MazeGenerator
-from typing import Optional
+
 
 def is_even(num: int) -> bool:
+    """Return whether an integer is even."""
     return num % 2 == 0
 
 
 def is_odd(num: int) -> bool:
+    """Return whether an integer is odd."""
     return num % 2 != 0
 
 
@@ -13,6 +17,18 @@ def get_path_positions(
     entry: tuple[int, int],
     path: list[str],
 ) -> set[tuple[int, int]]:
+    """Convert solution steps to room and corridor render coordinates.
+
+    Args:
+        entry: Maze entry coordinates.
+        path: Solution steps using ``N``, ``E``, ``S``, and ``W``.
+
+    Returns:
+        Coordinates occupied by the solution in the expanded render grid.
+
+    Raises:
+        KeyError: If the path contains an unsupported direction letter.
+    """
     x, y = entry
 
     offsets: dict[str, tuple[int, int]] = {
@@ -61,6 +77,20 @@ def render(
     show_path: bool,
     wall_color: int,
 ) -> str:
+    """Render a maze as a colored terminal string.
+
+    Args:
+        grid: Wall bitmasks indexed as ``grid[y][x]``.
+        entry: Entry coordinates.
+        exit_: Exit coordinates.
+        pattern_cells: Reserved cells forming the ``42`` pattern.
+        path: Shortest solution steps.
+        show_path: Whether to highlight the solution.
+        wall_color: Wall palette selection: 1 white, 2 blue, 3 purple.
+
+    Returns:
+        A multiline ANSI-colored maze representation.
+    """
     wall = "█" * 2
     space = " " * 2
 

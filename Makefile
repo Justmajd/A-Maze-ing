@@ -1,10 +1,10 @@
-.PHONY: install run debug clean lint lint-strict
+.PHONY: install run debug clean lint lint-strict test build
 
 install:
 	poetry install
 
 run:
-	python3 a_maze_ing.py config.txt
+	poetry run python3 a_maze_ing.py config.txt
 
 debug:
 	poetry run python -m pdb a_maze_ing.py config.txt
@@ -28,3 +28,10 @@ lint:
 lint-strict:
 	poetry run flake8 .
 	poetry run mypy --strict .
+
+test:
+	poetry run pytest
+
+build:
+	poetry build
+	cp dist/mazegen-*.whl .

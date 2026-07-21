@@ -2,6 +2,8 @@
 name = "mazegen"
 version = "1.0.0"
 description = "A-maze-ing is a reusable maze generator with recursive backtracking, optional braiding, and BFS solving."
+license = "MIT"
+license-files = ["LICENSE.md"]
 authors = [
     {name = "Majd Jamal",email = "majd.alhodali@learner.42.tech"},
     {name = "Omar Jaradat",email ="omar.jaradat@learner.42.tech"}

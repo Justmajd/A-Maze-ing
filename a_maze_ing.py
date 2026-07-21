@@ -1,5 +1,7 @@
-from sys import argv, exit
+"""Command-line configuration, orchestration, and interactive maze menu."""
+
 from dataclasses import dataclass
+from sys import argv, exit
 from typing import Optional
 
 from mazegen import MazeGenerator
@@ -8,6 +10,8 @@ from renderer import render
 
 @dataclass
 class MazeConfig:
+    """Validated configuration values used to construct a maze."""
+
     width: int
     height: int
     entry: tuple[int, int]
@@ -18,35 +22,67 @@ class MazeConfig:
 
 
 def parse_config(path: str) -> dict[str, str]:
+    """Parse ``KEY=VALUE`` configuration lines from a UTF-8 text file.
+
+    Empty lines and lines beginning with ``#`` are ignored.
+
+    Args:
+        path: Configuration file path.
+
+    Returns:
+        A mapping containing each parsed key and value.
+
+    Raises:
+        OSError: If the file cannot be opened or read.
+        UnicodeError: If the file is not valid UTF-8 text.
+        ValueError: If a line is malformed or repeats a key.
+    """
     result: dict[str, str] = {}
-    with open(path, "r") as file:
+    with open(path, "r", encoding="utf-8") as file:
         for lineno, line in enumerate(file, start=1):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             parts = line.split("=", 1)
-            key = parts[0].strip()
-            if len(parts) != 2 or not parts[0] or not parts[1]:
+            if len(parts) != 2:
                 raise ValueError(
                     f"malformed config line: line [{lineno}]\n content: {line}"
                 )
-            if key in result.keys():
+            key = parts[0].strip()
+            value = parts[1].strip()
+            if not key or not value:
+                raise ValueError(
+                    f"malformed config line: line [{lineno}]\n content: {line}"
+                )
+            if key in result:
                 raise ValueError(
                     "duplicated config line: line "
                     f"[{lineno}]\n content: {line}"
                 )
-            result[key] = parts[1].strip()
+            result[key] = value
     return result
 
 
 def validate_config(raw: dict[str, str]) -> MazeConfig:
+    """Validate raw configuration values and convert them to typed values.
+
+    Args:
+        raw: Parsed configuration mapping.
+
+    Returns:
+        A validated :class:`MazeConfig` instance.
+
+    Raises:
+        ValueError: If a required key, value, coordinate, or playable-board
+            dimension is invalid.
+    """
     required = {"WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"}
     keys = raw.keys()
     not_filled = required - set(keys)
     if not_filled:
         raise ValueError(
             "please fill the following keys in the 'config.txt' file : "
-            f"{", ".join(sorted(not_filled))}"
+            f"{', '.join(sorted(not_filled))}"
         )
     try:
         temp_width = int(raw["WIDTH"])
@@ -114,12 +150,17 @@ def validate_config(raw: dict[str, str]) -> MazeConfig:
     else:
         seed = None
 
+    if not perfect and (temp_width < 3 or temp_height < 3):
+        raise ValueError(
+            "Non-perfect mazes require width and height of at least 3"
+        )
+
     maze_config = MazeConfig(
         width=temp_width,
         height=temp_height,
         entry=(entryx, entryy),
         exit=(exitx, exity),
-        output_file=raw["OUTPUT_FILE"],
+        output_file=output_file,
         perfect=perfect,
         seed=seed,
     )
@@ -128,6 +169,7 @@ def validate_config(raw: dict[str, str]) -> MazeConfig:
 
 
 def main() -> None:
+    """Run the complete maze pipeline and interactive terminal menu."""
     if len(argv) < 2:
         print("no config was passed")
         exit(1)
@@ -138,7 +180,7 @@ def main() -> None:
         path = argv[1]
         try:
             config_dict = parse_config(path)
-        except (FileNotFoundError, ValueError) as e:
+        except (OSError, UnicodeError, ValueError) as e:
             print(e)
             exit(1)
         try:
@@ -167,6 +209,11 @@ def main() -> None:
             exit(1)
     while True:
         try:
+            maze.output(config.output_file, solution)
+        except Exception as e:
+            print(f"Failed to write output file: {e}")
+            exit(1)
+        try:
             rendered_maze = render(
                 maze.grid,
                 maze.entry,
@@ -187,32 +234,46 @@ def main() -> None:
         print("4. Change wall color")
         print("5. Change seed and regenerate")
         print("6. Quit\n")
-        print("Choose an option:",end="")
+        print("Choose an option:", end="")
         try:
             choice: int = int(input())
             if (choice > 6 or choice < 1):
                 raise ValueError("choose a number from 1-6")
+        except (EOFError, KeyboardInterrupt):
+            print("\nInput closed. Exiting.")
+            return
         except ValueError as e:
             print(e)
             continue
         if choice == 1:
-            maze.generate()
-            solution = maze.solve()
+            try:
+                maze.generate()
+            except Exception as e:
+                print(f"Failed to generate maze: {e}")
+                exit(1)
+            try:
+                solution = maze.solve()
+            except Exception as e:
+                print(f"Failed to solve maze: {e}")
+                exit(1)
         elif choice == 2:
             maze.show_path = True
         elif choice == 3:
             maze.show_path = False
         elif choice == 4:
             while True:
-                print("Choose a color:", end="")
                 print("1. White")
                 print("2. Blue")
                 print("3. Purple")
                 print("4. Go back")
+                print("Choose a color:", end="")
                 try:
                     color_choice: int = int(input())
-                    if (choice > 4 or choice < 1):
+                    if (color_choice > 4 or color_choice < 1):
                         raise ValueError("choose a number from 1-4")
+                except (EOFError, KeyboardInterrupt):
+                    print("\nInput closed. Exiting.")
+                    return
                 except ValueError as e:
                     print(e)
                     continue
@@ -227,32 +288,36 @@ def main() -> None:
                 break
         elif choice == 5:
             try:
-                print("Enter new seed(blank is random generation):",end="")
-                new_seed: Optional[int] = None
+                print("Enter new seed(blank is random generation):", end="")
                 str_seed = input()
-                if str_seed == "":
-                    print("Generation is random because seed isn't entered")
-                    maze.generate()
-                    solution = maze.solve()
-                    continue
-                new_seed = int(str_seed)
-                maze.seed = new_seed
-                maze.generate()
-                solution = maze.solve()
+            except (EOFError, KeyboardInterrupt):
+                print("\nInput closed. Exiting.")
+                return
+
+            try:
+                maze.seed = None if str_seed == "" else int(str_seed)
             except ValueError:
-                print("enter a Valid seed")
+                print("enter a valid seed")
+                continue
+
+            if maze.seed is None:
+                print("Generation is random because seed isn't entered")
+
+            try:
+                maze.generate()
+            except Exception as e:
+                print(f"Failed to generate maze: {e}")
+                exit(1)
+            try:
+                solution = maze.solve()
+            except Exception as e:
+                print(f"Failed to solve maze: {e}")
+                exit(1)
         elif choice == 6:
             print("thanks for trying our maze!")
             print("Made with love by malhodal and omjarada")
             break
+
+
 if __name__ == "__main__":
     main()
-
-"""
-        try:
-            maze.output(config.output_file, solution)
-        except Exception as e:
-            print(f"Failed to write output file: {e}")
-            exit(1)
-
-"""
