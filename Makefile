@@ -14,7 +14,7 @@ clean:
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	rm -f maze.txt
-
+	
 lint:
 	poetry run flake8 .
 	poetry run mypy \

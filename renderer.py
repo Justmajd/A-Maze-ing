@@ -1,4 +1,4 @@
-from mazegen.generator import MazeGenerator
+from mazegen import MazeGenerator
 
 
 def is_even(num: int) -> bool:
