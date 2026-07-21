@@ -4,13 +4,15 @@ install:
 	poetry install
 
 run:
-	poetry run python a_maze_ing.py
+	poetry run python a_maze_ing.py config.txt
 
 debug:
-	poetry run python -m pdb a_maze_ing.py
+	poetry run python -m pdb a_maze_ing.py config.txt
 
 clean:
-	rm -rf __pycache__ .mypy_cache .pytest_cache
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name ".mypy_cache" -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	rm -f maze.txt
 
 lint:
