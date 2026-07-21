@@ -1,5 +1,5 @@
 from mazegen import MazeGenerator
-
+from typing import Optional
 
 def is_even(num: int) -> bool:
     return num % 2 == 0
@@ -58,6 +58,8 @@ def render(
     exit_: tuple[int, int],
     pattern_cells: set[tuple[int, int]],
     path: list[str],
+    show_path: bool,
+    wall_color: int,
 ) -> str:
     wall = "█" * 2
     space = " " * 2
@@ -67,11 +69,20 @@ def render(
     entry_color = "\033[32m"
     exit_color = "\033[31m"
     reset = "\033[0m"
+    blue = "\033[0;34m"
+    white = "\033[0;37m"
+    purple = "\033[0;35m"
 
     pattern_block = f"{pattern_color}{wall}{reset}"
     path_block = f"{path_color}{wall}{reset}"
     entry_block = f"{entry_color}{wall}{reset}"
     exit_block = f"{exit_color}{wall}{reset}"
+    if wall_color == 1:
+        wall = f"{white}{wall}{reset}"
+    elif wall_color == 2:
+        wall = f"{blue}{wall}{reset}"
+    elif wall_color == 3:
+        wall = f"{purple}{wall}{reset}"
 
     height = len(grid)
     width = len(grid[0]) if grid else 0
@@ -99,7 +110,7 @@ def render(
                     row // 2,
                 )
 
-                if (row, column) in path_positions:
+                if ((row, column) in path_positions) and show_path:
                     current_row.append(path_block)
                     continue
 
@@ -133,7 +144,7 @@ def render(
                     (row - 1) // 2,
                 )
 
-                if (row, column) in path_positions:
+                if ((row, column) in path_positions) and show_path:
                     current_row.append(path_block)
                     continue
 
@@ -158,13 +169,13 @@ def render(
                 x = (column - 1) // 2
                 y = (row - 1) // 2
 
-                if (x, y) in pattern_cells:
+                if ((x, y) in pattern_cells):
                     current_row.append(pattern_block)
                 elif (x, y) == entry:
                     current_row.append(entry_block)
                 elif (x, y) == exit_:
                     current_row.append(exit_block)
-                elif (row, column) in path_positions:
+                elif ((row, column) in path_positions) and show_path:
                     current_row.append(path_block)
                 else:
                     current_row.append(space)

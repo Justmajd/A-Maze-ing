@@ -160,19 +160,12 @@ def main() -> None:
         except Exception as e:
             print(f"Failed to generate maze: {e}")
             exit(1)
-
         try:
             solution = maze.solve()
         except Exception as e:
             print(f"Failed to solve maze: {e}")
             exit(1)
-
-        try:
-            maze.output(config.output_file, solution)
-        except Exception as e:
-            print(f"Failed to write output file: {e}")
-            exit(1)
-
+    while True:
         try:
             rendered_maze = render(
                 maze.grid,
@@ -180,12 +173,86 @@ def main() -> None:
                 maze.exit,
                 maze.pattern_cells,
                 solution,
+                maze.show_path,
+                maze.wall_color
             )
             print(rendered_maze)
         except Exception as e:
             print(f"Failed to render maze: {e}")
             exit(1)
-
-
+        print("=== A-Maze-ing Menu ===\n")
+        print("1. Regenerate maze")
+        print("2. Show shortest path")
+        print("3. Hide shortest path")
+        print("4. Change wall color")
+        print("5. Change seed and regenerate")
+        print("6. Quit\n")
+        print("Choose an option:",end="")
+        try:
+            choice: int = int(input())
+            if (choice > 6 or choice < 1):
+                raise ValueError("choose a number from 1-6")
+        except ValueError as e:
+            print(e)
+            continue
+        if choice == 1:
+            maze.generate()
+            solution = maze.solve()
+        elif choice == 2:
+            maze.show_path = True
+        elif choice == 3:
+            maze.show_path = False
+        elif choice == 4:
+            while True:
+                print("Choose a color:", end="")
+                print("1. White")
+                print("2. Blue")
+                print("3. Purple")
+                print("4. Go back")
+                try:
+                    color_choice: int = int(input())
+                    if (choice > 4 or choice < 1):
+                        raise ValueError("choose a number from 1-4")
+                except ValueError as e:
+                    print(e)
+                    continue
+                if color_choice == 1:
+                    maze.wall_color = 1
+                elif color_choice == 2:
+                    maze.wall_color = 2
+                elif color_choice == 3:
+                    maze.wall_color = 3
+                elif color_choice == 4:
+                    break
+                break
+        elif choice == 5:
+            try:
+                print("Enter new seed(blank is random generation):",end="")
+                new_seed: Optional[int] = None
+                str_seed = input()
+                if str_seed == "":
+                    print("Generation is random because seed isn't entered")
+                    maze.generate()
+                    solution = maze.solve()
+                    continue
+                new_seed = int(str_seed)
+                maze.seed = new_seed
+                maze.generate()
+                solution = maze.solve()
+            except ValueError:
+                print("enter a Valid seed")
+        elif choice == 6:
+            print("thanks for trying our maze!")
+            print("Made with love by malhodal and omjarada")
+            break
 if __name__ == "__main__":
     main()
+
+"""
+        try:
+            maze.output(config.output_file, solution)
+        except Exception as e:
+            print(f"Failed to write output file: {e}")
+            exit(1)
+
+"""

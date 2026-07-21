@@ -23,6 +23,8 @@ class MazeGenerator:
         self.seed = seed
         self.grid = [[15] * self.width for _ in range(self.height)]
         self.pattern_cells = self.build_42_pattern()
+        self.show_path = False
+        self.wall_color = 1
 
     def carve(self, x: int, y: int, direction: int) -> None:
         dx, dy = self.OFFSET[direction]
@@ -330,7 +332,6 @@ class MazeGenerator:
         minimum_width = pattern_width + 2
         minimum_height = pattern_height + 2
         if self.width < minimum_width or self.height < minimum_height:
-            print("Maze is too small to display the 42 pattern")
             return pattern_cells
         start_x = (self.width - pattern_width) // 2
         start_y = (self.height - pattern_height) // 2
