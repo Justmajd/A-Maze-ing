@@ -4,7 +4,7 @@ install:
 	poetry install
 
 run:
-	poetry run python a_maze_ing.py
+	python3 a_maze_ing.py config.txt
 
 debug:
 	poetry run python -m pdb a_maze_ing.py

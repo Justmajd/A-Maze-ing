@@ -2,6 +2,9 @@ from sys import argv, exit
 from dataclasses import dataclass
 from typing import Optional
 
+from mazegen.generator import MazeGenerator
+from renderer import render
+
 
 @dataclass
 class MazeConfig:
@@ -43,7 +46,7 @@ def validate_config(raw: dict[str, str]) -> MazeConfig:
     if not_filled:
         raise ValueError(
             "please fill the following keys in the 'config.txt' file : "
-            f"{', '.join(not_filled)}"
+            f"{", ".join(sorted(not_filled))}"
         )
     try:
         temp_width = int(raw["WIDTH"])
@@ -99,6 +102,10 @@ def validate_config(raw: dict[str, str]) -> MazeConfig:
             "Perfect value is not written in correct syntax "
             f"(True or False) : {raw['PERFECT']}"
         )
+    output_file = raw["OUTPUT_FILE"].strip()
+
+    if not output_file:
+        raise ValueError("OUTPUT_FILE must not be empty")
     if "SEED" in raw:
         try:
             seed = int(raw["SEED"])
@@ -135,7 +142,7 @@ def main() -> None:
             print(e)
             exit(1)
         try:
-            validate_config(config_dict)
+            config = validate_config(config_dict)
         except ValueError as e:
             print(e)
             exit(1)
