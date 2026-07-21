@@ -4,21 +4,16 @@ install:
 	poetry install
 
 run:
-	poetry run python a_maze_ing.py
+	poetry run python a_maze_ing.py config.txt
 
 debug:
-	poetry run python -m pdb a_maze_ing.py
+	poetry run python -m pdb a_maze_ing.py config.txt
 
 clean:
-	rm -rf __pycache__ .mypy_cache .pytest_cache
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name ".mypy_cache" -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	rm -f maze.txt
-
-# --- LINT FLAG EXPLANATIONS ---
-# --warn-return-any       : Warns if a function returns 'Any' instead of a strict type.
-# --warn-unused-ignores   : Warns if a '# type: ignore' comment is used where it isn't needed.
-# --ignore-missing-imports: Prevents errors when importing external libraries (like mlx) that lack type hints.
-# --disallow-untyped-defs : Forces every function definition to have explicit type hints.
-# --check-untyped-defs    : Type-checks the inside of functions even if their definition is missing hints.
 
 lint:
 	poetry run flake8 .
