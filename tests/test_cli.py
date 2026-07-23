@@ -113,3 +113,42 @@ def test_closed_input_exits_menu_gracefully(
     output = capsys.readouterr().out
     assert "Input closed" in output
     assert "Traceback" not in output
+
+
+def test_required_terminal_size_includes_maze_and_menu() -> None:
+    """Terminal requirements should include render scaling and menu space."""
+    assert application.required_terminal_size(6, 6) == (32, 24)
+    assert application.required_terminal_size(20, 20) == (83, 52)
+
+
+def test_monitored_input_reports_terminal_that_became_too_small(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Interactive input should return promptly after a terminal shrink."""
+
+    class InteractiveInput:
+        """Minimal interactive input stream used by the monitor."""
+
+        def isatty(self) -> bool:
+            """Report that this stream is connected to a terminal."""
+            return True
+
+    class InteractiveOutput:
+        """Minimal interactive output stream used by the monitor."""
+
+        def isatty(self) -> bool:
+            """Report that this stream is connected to a terminal."""
+            return True
+
+    monkeypatch.setattr(application.sys, "stdin", InteractiveInput())
+    monkeypatch.setattr(application.sys, "stdout", InteractiveOutput())
+    monkeypatch.setattr(
+        application,
+        "terminal_fits",
+        lambda _columns, _rows: (False, 40, 20),
+    )
+
+    state, value = application.read_input_with_terminal_check(80, 30)
+
+    assert state is application.InputState.TERMINAL_TOO_SMALL
+    assert value == ""
