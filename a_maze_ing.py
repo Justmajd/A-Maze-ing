@@ -229,11 +229,10 @@ def main() -> None:
             exit(1)
         print("=== A-Maze-ing Menu ===\n")
         print("1. Regenerate maze")
-        print("2. Show shortest path")
-        print("3. Hide shortest path")
-        print("4. Change wall color")
-        print("5. Change seed and regenerate")
-        print("6. Quit\n")
+        print("2. Toggle shortest path")
+        print("3. Change wall color")
+        print("4. Change seed and regenerate")
+        print("5. Quit\n")
         print("Choose an option:", end="")
         try:
             choice: int = int(input())
@@ -256,11 +255,11 @@ def main() -> None:
             except Exception as e:
                 print(f"Failed to solve maze: {e}")
                 exit(1)
-        elif choice == 2:
+        elif choice == 2 and maze.show_path == False:
             maze.show_path = True
-        elif choice == 3:
+        elif choice == 2 and maze.show_path == True:
             maze.show_path = False
-        elif choice == 4:
+        elif choice == 3:
             while True:
                 print("1. White")
                 print("2. Blue")
@@ -286,7 +285,7 @@ def main() -> None:
                 elif color_choice == 4:
                     break
                 break
-        elif choice == 5:
+        elif choice == 4:
             try:
                 print("Enter new seed(blank is random generation):", end="")
                 str_seed = input()
@@ -313,7 +312,7 @@ def main() -> None:
             except Exception as e:
                 print(f"Failed to solve maze: {e}")
                 exit(1)
-        elif choice == 6:
+        elif choice == 5:
             print("thanks for trying our maze!")
             print("Made with love by malhodal and omjarada")
             break
